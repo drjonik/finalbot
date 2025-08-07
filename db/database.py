@@ -50,3 +50,11 @@ async def remove_task(user_id: int, text: str):
         )
         await session.commit()
         return result.rowcount > 0
+        from sqlalchemy import select
+
+async def get_user_tasks(user_id: int):
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(Task).where(Task.user_id == user_id, Task.done == 0)
+        )
+        return result.scalars().all()
