@@ -35,6 +35,10 @@
 
 1. Склонировать репозиторий.
 2. Скопировать шаблон `.env.example` в `.env` и заполнить:
+   - `TOKEN` — токен Telegram‑бота
+   - `DB_URL` — строка подключения к базе PostgreSQL
+   - `DEFAULT_LANGUAGE` — код языка по умолчанию (например, `ru` или `en`)
+
    ```bash
    cp .env.example .env
    ```
