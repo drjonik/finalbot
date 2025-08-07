@@ -1,7 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+ from sqlalchemy import Column, Integer, String, DateTime, Boolean, select
++from sqlalchemy import text
 
 Base = declarative_base()
 
@@ -21,9 +22,13 @@ async def init_db(db_url: str):
     global engine, SessionLocal
     engine = create_async_engine(db_url, echo=False)
     SessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
+     async with engine.begin() as conn:
+        # создаём таблицы, если нужно
+       await conn.run_sync(Base.metadata.create_all)
+        # приводим колонку done к boolean (если до этого она была integer)
+        await conn.execute(
+            text("ALTER TABLE tasks ALTER COLUMN done TYPE BOOLEAN USING done::boolean")
+        )
 async def add_task(user_id: int, parsed) -> Task:
     async with SessionLocal() as session:
         task = Task(
