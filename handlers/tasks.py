@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from pydantic import BaseModel, ValidationError
 from utils.parser import parse_natural
-from db.database import add_task, get_user_tasks
+from db.database import add_task, get_user_tasks, remove_task
 from utils.lang import I18n, _
 
 router = Router()
