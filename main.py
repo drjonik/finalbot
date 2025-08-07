@@ -34,8 +34,8 @@ async def main():
     # Регистрируем сначала хэндлеры задач…
     tasks.register(dp)
     # …а затем — меню
+    tasks.register(dp)
     menu.register(dp)
-
     # Start scheduler
     sched = Scheduler(bot)
     await sched.load_jobs()
