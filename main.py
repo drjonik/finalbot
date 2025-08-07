@@ -5,7 +5,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
 import os
 
-from handlers import menu, tasks
+from handlers import tasks, menu                # <-- menu и tasks
 from scheduler.scheduler import Scheduler
 from db.database import init_db
 from utils.lang import I18n
@@ -31,9 +31,10 @@ async def main():
     # Initialize i18n
     I18n.load(locales_dir='locales', default_lang=DEFAULT_LANG)
 
-    # Register handlers
-    menu.register(dp)
+    # Регистрируем сначала хэндлеры задач…
     tasks.register(dp)
+    # …а затем — меню
+    menu.register(dp)
 
     # Start scheduler
     sched = Scheduler(bot)
