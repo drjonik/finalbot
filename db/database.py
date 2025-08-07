@@ -1,8 +1,6 @@
-from sqlalchemy import select
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, text, select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
- from sqlalchemy import Column, Integer, String, DateTime, Boolean, select
-+from sqlalchemy import text
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
 
@@ -22,25 +20,26 @@ async def init_db(db_url: str):
     global engine, SessionLocal
     engine = create_async_engine(db_url, echo=False)
     SessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-     async with engine.begin() as conn:
-        # создаём таблицы, если нужно
-       await conn.run_sync(Base.metadata.create_all)
-        # приводим колонку done к boolean (если до этого она была integer)
+    async with engine.begin() as conn:
+        # Создаём таблицы, если ещё нет
+        await conn.run_sync(Base.metadata.create_all)
+        # Приводим столбец done к Boolean (если раньше был integer)
         await conn.execute(
             text("ALTER TABLE tasks ALTER COLUMN done TYPE BOOLEAN USING done::boolean")
         )
+
 async def add_task(user_id: int, parsed) -> Task:
     async with SessionLocal() as session:
-        task = Task(
+        t = Task(
             user_id=user_id,
             text=parsed.text,
             date_time=parsed.date_time,
             repeat=parsed.repeat
         )
-        session.add(task)
+        session.add(t)
         await session.commit()
-        await session.refresh(task)
-        return task
+        await session.refresh(t)
+        return t
 
 async def get_user_tasks(user_id: int) -> list[Task]:
     async with SessionLocal() as session:
@@ -63,9 +62,7 @@ async def remove_task(user_id: int, text: str) -> bool:
         await session.commit()
         return True
 
-# — Добавили эти две функции: —
 async def get_pending_tasks() -> list[Task]:
-    """Список всех незавершённых задач (для планировщика)."""
     async with SessionLocal() as session:
         result = await session.execute(
             select(Task).where(Task.done == False)
@@ -73,6 +70,5 @@ async def get_pending_tasks() -> list[Task]:
         return result.scalars().all()
 
 async def get_task(task_id: int) -> Task | None:
-    """Получить одну задачу по её id."""
     async with SessionLocal() as session:
         return await session.get(Task, task_id)
