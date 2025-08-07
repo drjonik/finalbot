@@ -2,12 +2,18 @@ from aiogram import Router, types
 from aiogram.filters import Command, Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
+
 from utils.parser import parse_natural
 from db.database import add_task, get_user_tasks, remove_task
 from utils.lang import I18n, _
 
 router = Router()
+
+class TaskIn(BaseModel):
+    text: str
+    date_time: str
+    repeat: str | None = None
 
 class AddTask(StatesGroup):
     waiting_for_input = State()
@@ -16,8 +22,8 @@ class AddTask(StatesGroup):
 async def callback_add(call: types.CallbackQuery, state: FSMContext):
     user_lang = I18n.get_user_lang(call.from_user.id)
     await call.message.answer(
-        _('✍️ Напиши напоминание в свободной форме:', user_lang) + "\n" +
-        _('Пример: каждый понедельник в 10:00 спортзал', user_lang)
+        _('✍️ Напиши напоминание в свободной форме:', user_lang) + "\n"
+        + _('Пример: каждый понедельник в 10:00 спортзал', user_lang)
     )
     await state.set_state(AddTask.waiting_for_input)
     await call.answer()
@@ -53,7 +59,7 @@ async def callback_view(call: types.CallbackQuery):
             f"{i+1}. {t.text} — {t.date_time.strftime('%Y-%m-%d %H:%M')}"
             for i, t in enumerate(tasks)
         ]
-        await call.message.answer("\n".join(lines))
+        await call.message.answer('\n'.join(lines))
     await call.answer()
 
 @router.callback_query(Text('settings'))
@@ -62,7 +68,7 @@ async def callback_settings(call: types.CallbackQuery):
     await call.message.answer(_('⚙️ Здесь позже будут настройки.', user_lang))
     await call.answer()
 
-@router.message(Command(commands=['cancel', 'Отмени']))
+@router.message(Command(commands=['cancel','Отмени']))
 async def cancel_task(message: types.Message):
     user_lang = I18n.get_user_lang(message.from_user.id)
     success = await remove_task(message.from_user.id, message.text)
