@@ -40,7 +40,7 @@ async def main():
     await sched.load_jobs()
 
     logger.info("Bot started")
-    await dp.start_polling()
+    await dp.start_polling(bot)
 
 if __name__ == '__main__':
     asyncio.run(main())
