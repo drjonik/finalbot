@@ -7,3 +7,4 @@ alembic>=1.10
 aiosqlite>=0.17
 asyncpg>=0.26.0
 python-dateutil>=2.8
+psycopg2-binary>=2.9
