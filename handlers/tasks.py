@@ -2,18 +2,12 @@ from aiogram import Router, types
 from aiogram.filters import Command, Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from pydantic import BaseModel, ValidationError
 
-from utils.parser import parse_natural
+from utils.parser import ParsedTask, parse_natural
 from db.database import add_task, get_user_tasks, remove_task
 from utils.lang import I18n, _
 
 router = Router()
-
-class TaskIn(BaseModel):
-    text: str
-    date_time: str
-    repeat: str | None = None
 
 class AddTask(StatesGroup):
     waiting_for_input = State()
@@ -32,7 +26,7 @@ async def callback_add(call: types.CallbackQuery, state: FSMContext):
 async def process_task_input(message: types.Message, state: FSMContext):
     user_lang = I18n.get_user_lang(message.from_user.id)
     try:
-        parsed = parse_natural(message.text, user_lang)
+        parsed: ParsedTask = parse_natural(message.text, user_lang)
     except Exception:
         await message.answer(_('Не удалось понять запрос.', user_lang))
         await state.clear()
@@ -40,7 +34,7 @@ async def process_task_input(message: types.Message, state: FSMContext):
 
     try:
         task = await add_task(message.from_user.id, parsed)
-    except ValidationError:
+    except Exception:
         await message.answer(_('Не удалось создать задачу.', user_lang))
         await state.clear()
         return
